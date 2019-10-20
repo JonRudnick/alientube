@@ -9,7 +9,7 @@
 interface Navigator {
 	mozApps:Apps;
 }
-
+asdg
 interface HTMLLinkElement {
 	import;
 }

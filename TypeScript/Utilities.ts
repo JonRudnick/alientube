@@ -34,7 +34,6 @@ module AlienTube {
             switch (typeof (arg)) {
                 case "string":
                     return arg.trim().toLowerCase() === "true";
-                    break;
     
                 case "number":
                     return arg > 0;

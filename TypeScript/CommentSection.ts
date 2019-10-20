@@ -51,7 +51,10 @@ module AlienTube {
                             });
                             
                             let preferredPost, preferredSubreddit;
-                            if (finalResultCollection.length > 0) {
+                            if (finalResultCollection.length === 0) {
+                                this.returnNoResults();
+                            }
+                            else {
                                 if (Application.currentMediaService() === Service.YouTube) {
                                     /* Scan the YouTube comment sections for references to subreddits or reddit threads.
                                     These will be prioritised and loaded first.  */
@@ -124,11 +127,11 @@ module AlienTube {
 
                                     // Load the first tab.
                                     this.downloadThread(this.threadCollection[0]);
-                                    return;
                                 }
                             }
-                            this.returnNoResults();
                         }
+                        window.addEventListener("resize", this.updateCommentsWidth.bind(this));
+                        this.updateCommentsWidth();
                     }.bind(this), null, loadingScreen);
                 }.bind(this));
             }
@@ -183,8 +186,8 @@ module AlienTube {
             let commentsContainer;
             let serviceCommentsContainer;
             if (Application.currentMediaService() === Service.YouTube) {
-                commentsContainer = document.getElementById("container");
-                serviceCommentsContainer = document.getElementById("comments");
+                commentsContainer = document.getElementById(Application.CONTENT_ELEMENT_ID);
+                serviceCommentsContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 commentsContainer = document.querySelector(".comments_container");
                 serviceCommentsContainer = document.querySelector(".comments_hide");
@@ -231,7 +234,7 @@ module AlienTube {
             if (!allowOnChannelContainer) {
                 let actionsContainer;
                 if (Application.currentMediaService() === Service.YouTube) {
-                    actionsContainer = document.getElementById("watch7-user-header");
+                    actionsContainer = document.getElementById(Application.CHANNEL_CONTAINER_ID);
                 } else if (Application.currentMediaService() === Service.Vimeo) {
                     actionsContainer = document.querySelector(".video_meta .byline");
                 }
@@ -311,7 +314,7 @@ module AlienTube {
             let len = this.threadCollection.length;
             let maxWidth;
             if (Application.currentMediaService() === Service.YouTube) {
-                maxWidth = document.getElementById("watch7-content").offsetWidth - 80;
+                maxWidth = document.getElementById(Application.SIZE_REFERENCE_ELEMENT).offsetWidth - 80;
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 maxWidth = document.getElementById("comments").offsetWidth - 80;
             }
@@ -399,7 +402,7 @@ module AlienTube {
             let googlePlusButton = template.querySelector("#at_switchtogplus");
             googlePlusButton.addEventListener("click", this.onGooglePlusClick, false);
 
-            let googlePlusContainer = document.getElementById("watch-discussion");
+            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
             
             if (Preferences.getBoolean("showGooglePlusButton") === false || googlePlusContainer === null) {
                 googlePlusButton.style.display = "none";
@@ -425,7 +428,7 @@ module AlienTube {
          * @private
          */
         private onRedditClick(eventObject: Event) {
-            let googlePlusContainer = document.getElementById("comments");
+            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
             googlePlusContainer.style.visibility = "collapse";
             googlePlusContainer.style.height = "0";
             let alienTubeContainer = document.getElementById("alientube");
@@ -442,7 +445,7 @@ module AlienTube {
         private onGooglePlusClick(eventObject: Event) {
             let alienTubeContainer = document.getElementById("alientube");
             alienTubeContainer.style.display = "none";
-            let googlePlusContainer = document.getElementById("comments");
+            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
             googlePlusContainer.style.visibility = "visible";
             googlePlusContainer.style.height = "auto";
             let redditButton = <HTMLDivElement> document.getElementById("at_switchtoreddit");
@@ -476,6 +479,18 @@ module AlienTube {
                         break;
                     }
                 }
+            }.bind(this));
+        }
+
+        /**
+         * Update comment section to new size of the document
+         * @private
+         */
+        private updateCommentsWidth() {
+            window.requestAnimationFrame(function () {
+                // Set Alientube comment width to the size reference element's
+                var w = document.getElementById(Application.SIZE_REFERENCE_ELEMENT).offsetWidth;
+                document.getElementById("alientube").style.width = w + "px";
             }.bind(this));
         }
 
@@ -582,7 +597,7 @@ module AlienTube {
         private getDisplayActionForCurrentChannel() {
             let channelId;
             if (Application.currentMediaService() === Service.YouTube) {
-                channelId = document.querySelector("meta[itemprop='channelId']").getAttribute("content");
+                channelId = document.getElementById(Application.CHANNEL_ELEMENT_ID).innerText;
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 channelId = document.querySelector("a[rel='author']").getAttribute("href").substring(1);
             }

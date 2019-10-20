@@ -13,6 +13,14 @@ module AlienTube {
         static localisationManager: LocalisationManager;
         static commentSection: CommentSection;
         currentVideoIdentifier: string;
+        
+        // Some constants for new YouTube layout
+        static CONTENT_ELEMENT_ID = "main";
+        static COMMENT_ELEMENT_ID = "comments";
+        static CHANNEL_ELEMENT_ID = "owner-name";
+        static SIZE_REFERENCE_ELEMENT = "info-contents";
+        static CHANNEL_CONTAINER_ID = "upload-info";
+        static PAGE_NAV_EVENT = "yt-navigate-finish";
 
         constructor() {
             // Load preferences from disk.
@@ -39,14 +47,15 @@ module AlienTube {
                 }
                 
                 if (Application.currentMediaService() === Service.YouTube) {
-                    // Add event listener to detect when a new video is loaded.
-                    // See http://youtube.github.io/spfjs/documentation/events/
-                    document.addEventListener("spfdone", this.youtubeEventListener);
+                    // Detect page navigation
+                    document.addEventListener(Application.PAGE_NAV_EVENT, this.youtubePageNav);
                     
-                    // Start a new comment section.
-                    this.currentVideoIdentifier = Application.getCurrentVideoId();
-                    if (Utilities.isVideoPage) {
-                        Application.commentSection = new CommentSection(this.currentVideoIdentifier);
+                    // Make sure youtubePageNav will create initial comments
+                    this.currentVideoIdentifier = null;
+                    
+                    // If page has loaded, create comments section
+                    if (document.getElementById(Application.COMMENT_ELEMENT_ID)) {
+                        this.youtubePageNav();
                     }
                 } else if (Application.currentMediaService() === Service.Vimeo) {
                     // Start observer to detect when a new video is loaded.
@@ -171,42 +180,15 @@ module AlienTube {
             * @param callback A callback to be called when the extension templates has been loaded.
         */
         public static getExtensionTemplates(callback: any) {
-            switch (Application.getCurrentBrowser()) {
-                case Browser.FIREFOX:
-                    let template = document.createElement("div");
-                    let handlebarHTML = Handlebars.compile(self.options.template);
-                    template.innerHTML = handlebarHTML();
-
-                    if (callback) {
-                        callback(template);
-                    }
-                    break;
-
-                case Browser.SAFARI:
-                    new HttpRequest(Application.getExtensionRessourcePath("templates.html"), RequestType.GET, function (data) {
-                        let template = document.createElement("div");
-                        let handlebarHTML = Handlebars.compile(data);
-                        template.innerHTML = handlebarHTML();
-    
-                        if (callback) {
-                            callback(template);
-                        }
-                    }.bind(this), null, null);
-                    break;
-
-                case Browser.CHROME:
-                    let templateLink = document.createElement("link");
-                    templateLink.id = "alientubeTemplate";
-                    templateLink.onload = function () {
-                        if (callback) {
-                            callback(templateLink.import);
-                        }
-                    }.bind(this);
-                    templateLink.setAttribute("rel", "import");
-                    templateLink.setAttribute("href", Application.getExtensionRessourcePath("templates.html"));
-                    document.head.appendChild(templateLink);
-                    break;
-            }
+            var templateLink = new XMLHttpRequest();
+            templateLink.open("GET", Application.getExtensionRessourcePath("templates.html"), true);
+            templateLink.responseType = "document";
+            templateLink.onload = function() {
+                if (callback) {
+                    callback(templateLink.responseXML);
+                }
+            }.bind(this)
+            templateLink.send();
         }
         
         /**
@@ -238,16 +220,7 @@ module AlienTube {
          * @returns DOM node of a template section.
          */
         public static getExtensionTemplateItem(templateCollection: any, id: string) {
-            switch (Application.getCurrentBrowser()) {
-                case Browser.CHROME:
-                    return templateCollection.getElementById(id).content.cloneNode(true);
-                    
-                case Browser.FIREFOX:
-                    return templateCollection.querySelector("#" + id).content.cloneNode(true);
-                    
-                case Browser.SAFARI:
-                    return templateCollection.querySelector("#" + id).content.cloneNode(true);
-            }
+            return templateCollection.getElementById(id).content.cloneNode(true);
         }
         
         /**
