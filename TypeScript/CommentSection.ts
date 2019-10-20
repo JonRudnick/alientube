@@ -183,8 +183,8 @@ module AlienTube {
             let commentsContainer;
             let serviceCommentsContainer;
             if (Application.currentMediaService() === Service.YouTube) {
-                commentsContainer = document.getElementById("watch7-content");
-                serviceCommentsContainer = document.getElementById("watch-discussion");
+                commentsContainer = document.getElementById("container");
+                serviceCommentsContainer = document.getElementById("comments");
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 commentsContainer = document.querySelector(".comments_container");
                 serviceCommentsContainer = document.querySelector(".comments_hide");
@@ -425,7 +425,7 @@ module AlienTube {
          * @private
          */
         private onRedditClick(eventObject: Event) {
-            let googlePlusContainer = document.getElementById("watch-discussion");
+            let googlePlusContainer = document.getElementById("comments");
             googlePlusContainer.style.visibility = "collapse";
             googlePlusContainer.style.height = "0";
             let alienTubeContainer = document.getElementById("alientube");
@@ -442,7 +442,7 @@ module AlienTube {
         private onGooglePlusClick(eventObject: Event) {
             let alienTubeContainer = document.getElementById("alientube");
             alienTubeContainer.style.display = "none";
-            let googlePlusContainer = document.getElementById("watch-discussion");
+            let googlePlusContainer = document.getElementById("comments");
             googlePlusContainer.style.visibility = "visible";
             googlePlusContainer.style.height = "auto";
             let redditButton = <HTMLDivElement> document.getElementById("at_switchtoreddit");
