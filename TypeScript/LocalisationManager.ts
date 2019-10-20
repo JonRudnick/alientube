@@ -14,6 +14,7 @@ module AlienTube {
     export class LocalisationManager {
         private localisationData: any;
         private supportedLocalisations = [
+            'de',
             'en',
             'en-US',
             'no',
