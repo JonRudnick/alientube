@@ -20,15 +20,17 @@ body {
     box-sizing: border-box;
     background: #fff;
     box-shadow: 0 1px 2px rgba(0,0,0,.1);
-    overflow: hidden;
+    font-size: 13px;
+    overflow: visible;
 
     & a {
-        color: #0066aa;
+        color: #065fd4;
         cursor: pointer;
+        text-decoration: none;
     }
 
     & a:hover {
-        color: #0066aa;
+        color: #065fd4;
         text-decoration: underline;
     }
 
@@ -156,7 +158,7 @@ body {
             display: none;
             font-size: x-small;
         }
-        
+
         & .options {
             margin-top: 5px;
         }
@@ -187,7 +189,7 @@ body {
             background-color: transparent;
             padding-left: 8px;
         }
-        
+
         & .sortContainer:before {
             content: '▼';
             margin-right: -10px;
@@ -297,14 +299,14 @@ body {
                 padding: 0 2px 0 2px;
                 background-color: #2b6ed1;
             }
-            
+
             &[data-reddit-admin] {
                 color: #FFFFFF !important;
                 font-weight: bold;
                 padding: 0 2px 0 2px;
                 background-color: #d12b2b;
             }
-            
+
             &[data-reddit-mod] {
                 color: #FFFFFF !important;
                 font-weight: bold;
@@ -338,45 +340,45 @@ body {
                 border-left: 3px solid #a4b0cb;
                 padding-left: 5px;
             }
-            
+
             h1 {
                 font-size: 150%;
             }
-            
+
             h2 {
                 font-size: 125%;
             }
-            
+
             ul {
                 list-style-type: disc;
             }
-            
+
             ol {
                 list-style-type: decimal;
             }
-            
+
             li {
                 margin-top: 5px;
                 margin-bottom: 5px;
             }
-            
+
             td, th {
                 border: 1px solid #999;
                 padding: 0.5rem;
             }
-            
+
             sup {
                 font-size: smaller;
                 vertical-align: super;
             }
-            
+
             sub {
                 font-size: smaller;
                 vertical-align: sub;
             }
         }
 
-        &.hidden {
+        &.minimized {
             padding-top: 0;
             padding-bottom: 10px !important;
 
@@ -599,7 +601,7 @@ body {
         & > a {
             pointer-events: auto;
         }
-        
+
         &:hover {
             background: #fff;
         }
@@ -622,7 +624,7 @@ body {
     position: relative;
     @include display(flex);
     @include flex-direction(row);
-    
+
     &.single .at_tab.active {
         padding-bottom: 5px;
         border-bottom: 0;
@@ -675,10 +677,10 @@ body {
     border-left: none;
     border-bottom: none;
     cursor: pointer;
-    
+
     &.show {
         background: #f8f8f8;
-        
+
         & ul {
             display: block;
         }
@@ -710,12 +712,14 @@ body {
     & ul {
         min-width: 130px;
         max-width: 250px;
+        list-style: none;
+        padding: 0;
         text-overflow: ellipsis;
         box-sizing: border-box;
         opacity: 1;
         border: 1px solid #ccc;
         background: #fff;
-        margin-top: 30px;
+        margin-top: 43px;
         display: none;
         position: relative;
         white-space: nowrap;
@@ -920,32 +924,41 @@ a[href$="/spoiler"]::before {
 }
 
 .darkmode {
-    background: #242424 !important;
+    background: #111 !important;
     color: #fff;
-    
+
     select {
         background: #242424 !important;
     }
-    
+
     textarea {
         background: #3e3e3e!important;
     }
 
+    & a {
+        color: #3ea6ff !important;
+    }
+
+    & a:hover {
+        color: #3ea6ff !important;
+    }
+
     & .at_tab {
         text-shadow: none;
-        background: #242424 !important;
+        background: #111 !important;
+        border-bottom: 1px solid #242424;
 
         & a {
-            color: #555555 !important;
+            color: #999999 !important;
         }
-        
+
         &:hover {
             background: #2f2f2f !important;
         }
 
         &.active {
             padding-bottom: 0;
-            
+
             &:hover {
                 background: #242424 !important;
             }
@@ -953,14 +966,20 @@ a[href$="/spoiler"]::before {
     }
 
     & #at_overflow {
-        background: #242424 !important;
+        background: #111 !important;
 
         &:hover {
-            background-image: rgb(87, 87, 87);
+            background: #2f2f2f !important;
         }
 
         & ul {
             background: #262626;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        img {
+          filter: invert(100%);
         }
     }
 
@@ -977,23 +996,25 @@ a[href$="/spoiler"]::before {
     & #at_switchtoreddit svg {
         fill: #fff;
     }
-    
+
     & .at_writingauthor {
         color: #acacac;
     }
-    
+
     & .at_replies article {
         border-left: 1px dotted #7c7c7c !important;
     }
 }
 
 #allowOnChannelContainer {
-    margin-left: 15px;
+    font-size: 1.2em;
+}
+
+[dark] #allowOnChannelContainer {
+    color: #f6f6f6 !important;
 }
 
 #alientube[service='YouTube'] {
-    margin-top: 30px;
-    
     & .at_tab.active {
         border-bottom: 5px solid #fd4040;
 
@@ -1002,15 +1023,11 @@ a[href$="/spoiler"]::before {
             color: #fd4040 !important;
         }
     }
-    
+
     &.darkmode .at_tab.active {
         border-bottom: 5px solid #ff5353;
-
-        & a {
-            color: #0066aa !important;
-        }
     }
-    
+
     #at_overflow > ul > li:hover {
         background: #fd4040;
     }
@@ -1019,7 +1036,7 @@ a[href$="/spoiler"]::before {
 #alientube[service='Vimeo'] {
     box-shadow: none;
     border: 0;
-    
+
     & .at_tab.active {
         border-bottom: 5px solid #4bf;
 
@@ -1028,7 +1045,7 @@ a[href$="/spoiler"]::before {
             color: #4bf !important;
         }
     }
-    
+
     &.darkmode .at_tab.active {
         border-bottom: 5px solid #4bf;
 
@@ -1036,10 +1053,8 @@ a[href$="/spoiler"]::before {
             color: #4bf !important;
         }
     }
-    
+
     #at_overflow > ul > li:hover {
         background: #4bf;
     }
 }
-
-

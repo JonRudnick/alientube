@@ -9,10 +9,10 @@
 interface Navigator {
 	mozApps:Apps;
 }
-asdg
-interface HTMLLinkElement {
-	import;
-}
+
+// interface HTMLLinkElement {
+// 	import;
+// }
 
 interface HTMLElement {
 	content;

@@ -31,16 +31,12 @@ module AlienTube {
             /* Show / collapse function for the comment */
             let toggleHide = this.representedHTMLElement.querySelector(".at_togglehide");
             toggleHide.addEventListener("click", function() {
-                if (this.representedHTMLElement.classList.contains("hidden")) {
-                    this.representedHTMLElement.classList.remove("hidden")
-                } else {
-                    this.representedHTMLElement.classList.add("hidden");
-                }
+                this.representedHTMLElement.classList.toggle("minimized");
             }.bind(this), false);
 
             /* Hide comments with a score less than the threshold set by the user  */
             if (this.commentObject.score < Preferences.getNumber("hiddenCommentScoreThreshold")) {
-                this.representedHTMLElement.classList.add("hidden");
+                this.representedHTMLElement.classList.add("minimized");
             }
 
             /* Set the link and name of author, as well as whether they are the OP or not. */
@@ -78,7 +74,7 @@ module AlienTube {
             let timestamp = <HTMLSpanElement> this.representedHTMLElement.querySelector(".at_timestamp");
             timestamp.textContent = Application.getHumanReadableTimestamp(this.commentObject.created_utc);
             timestamp.setAttribute("timestamp", new Date(this.commentObject.created_utc).toISOString());
-            
+
             /* If the post has been edited, display the edit time next to the timestamp. */
             if (this.commentObject.edited) {
                 timestamp.classList.add("edited");
@@ -136,12 +132,12 @@ module AlienTube {
             giveGoldToUser.setAttribute("href", "http://www.reddit.com/gold?goldtype=gift&months=1&thing=" + this.commentObject.name);
             giveGoldToUser.textContent = Application.localisationManager.get("post_button_gold");
 
-            let reportToAdministrators = this.representedHTMLElement.querySelector(".report");
+            //let reportToAdministrators = this.representedHTMLElement.querySelector(".report");
             let editPost = this.representedHTMLElement.querySelector(".at_edit");
             let deletePost = this.representedHTMLElement.querySelector(".at_delete");
             if (this.commentObject.author === Preferences.getString("username")) {
                 /* Report button does not make sense on our own post, so let's get rid of it */
-                reportToAdministrators.parentNode.removeChild(reportToAdministrators);
+                //reportToAdministrators.parentNode.removeChild(reportToAdministrators);
 
                 /* Set the button text and the event handler for the "edit post" button */
                 editPost.textContent = Application.localisationManager.get("post_button_edit");
@@ -156,8 +152,8 @@ module AlienTube {
                 deletePost.parentNode.removeChild(deletePost);
 
                 /* Set the button text and the event handler for the "report comment" button */
-                reportToAdministrators.textContent = Application.localisationManager.get("post_button_report");
-                reportToAdministrators.addEventListener("click", this.onReportButtonClicked.bind(this), false);
+                //reportToAdministrators.textContent = Application.localisationManager.get("post_button_report");
+                //reportToAdministrators.addEventListener("click", this.onReportButtonClicked.bind(this), false);
             }
 
             /* Set the state of the voting buttons */
@@ -186,7 +182,7 @@ module AlienTube {
                 }.bind(this));
             }
         }
-    	
+
         /**
          * Either save a comment or unsave an already saved comment.
          * @param eventObject The event object for the click of the save button.
@@ -205,7 +201,7 @@ module AlienTube {
                 }
             });
         }
-        
+
         /**
          * Show the report comment form.
          * @param eventObject The event object for the click of the report button.
@@ -214,7 +210,7 @@ module AlienTube {
         private onReportButtonClicked(eventObject: Event) {
             new AlienTube.Reddit.Report(this.commentObject.name, this.commentThread, false);
         }
-        
+
         /**
          * Upvote a comment or remove an existing upvote.
          * @param eventObject The event object for the click of the upvote button.
@@ -252,7 +248,7 @@ module AlienTube {
                 new AlienTube.Reddit.VoteRequest(this.commentObject.name, AlienTube.Reddit.Vote.UPVOTE);
             }
         }
-    	
+
         /**
          * Downvote a comment or remove an existing downvote
          * @param eventObject The event object for the click of the downvote button.
@@ -292,7 +288,7 @@ module AlienTube {
         }
 
         /**
-         * Show or hide the comment/reply box. 
+         * Show or hide the comment/reply box.
          * @private
          */
         private onCommentButtonClick() {
@@ -302,7 +298,7 @@ module AlienTube {
             }
             new CommentField(this);
         }
-    	
+
         /**
          * Show the source of the comment.
          * @private
@@ -314,7 +310,7 @@ module AlienTube {
             }
             new CommentField(this, this.commentObject.body);
         }
-    	
+
         /**
          * Edit a comment.
          * @private
@@ -326,7 +322,7 @@ module AlienTube {
             }
             new CommentField(this, this.commentObject.body, true);
         }
-    	
+
         /**
          * Delete a comment.
          * @private
@@ -335,16 +331,18 @@ module AlienTube {
             let confirmation = window.confirm(Application.localisationManager.get("post_delete_confirm"));
             if (confirmation) {
                 var url = "https://api.reddit.com/api/del";
-                new HttpRequest(url, RequestType.POST, function () {
-                    this.representedHTMLElement.parentNode.removeChild(this.representedHTMLElement);
-                    let getIndexInParentList = this.commentThread.children.indexOf(this);
-                    if (getIndexInParentList !== -1) {
-                        this.commentThread.children.splice(getIndexInParentList, 1);
+                chrome.runtime.sendMessage({requestType: "redditRequest", url: url, type: RequestType.POST, data: {
+                    "uh": Preferences.getString("redditUserIdentifierHash"),
+                    "id": this.commentObject.name,
+                }}, (response) => {
+                    if (response.success) {
+                        this.representedHTMLElement.parentNode.removeChild(this.representedHTMLElement);
+                        let getIndexInParentList = this.commentThread.children.indexOf(this);
+                        if (getIndexInParentList !== -1) {
+                            this.commentThread.children.splice(getIndexInParentList, 1);
+                        }
                     }
-                }, {
-                        "uh": Preferences.getString("redditUserIdentifierHash"),
-                        "id": this.commentObject.name,
-                    });
+                });
             }
         }
     }

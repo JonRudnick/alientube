@@ -119,8 +119,8 @@ module AlienTube {
 
             /* Set the button text and the event handler for the "refresh" button */
             let refreshCommentThread = this.threadContainer.querySelector(".refresh");
-            refreshCommentThread.addEventListener("click", function () {
-                this.commentSection.threadCollection.forEach(function (item) {
+            refreshCommentThread.addEventListener("click", () => {
+                this.commentSection.threadCollection.forEach((item) => {
                     if (item.id === this.threadInformation.id) {
                         this.commentSection.downloadThread(item);
                     }
@@ -134,9 +134,9 @@ module AlienTube {
             giveGoldToUser.textContent = Application.localisationManager.get("post_button_gold");
 
             /* Set the button text and the event handler for the "report post" button */
-            let reportToAdministrators = this.threadContainer.querySelector(".report");
-            reportToAdministrators.textContent = Application.localisationManager.get("post_button_report");
-            reportToAdministrators.addEventListener("click", this.onReportButtonClicked.bind(this), false);
+            //let reportToAdministrators = this.threadContainer.querySelector(".report");
+            //reportToAdministrators.textContent = Application.localisationManager.get("post_button_report");
+            //reportToAdministrators.addEventListener("click", this.onReportButtonClicked.bind(this), false);
 
             /* Set the button text and event handler for the sort selector. */
             let sortController = <HTMLSelectElement> this.threadContainer.querySelector(".sort");
@@ -144,10 +144,10 @@ module AlienTube {
                 sortController.children[sortIndex].textContent = Application.localisationManager.get("post_sort_" + this.sortingTypes[sortIndex]);
             }
             sortController.selectedIndex = this.sortingTypes.indexOf(Preferences.getString("threadSortType"));
-            sortController.addEventListener("change", function () {
+            sortController.addEventListener("change", () => {
                 Preferences.set("threadSortType", sortController.children[sortController.selectedIndex].getAttribute("value"));
 
-                this.commentSection.threadCollection.forEach(function (item) {
+                (<any>this).commentSection.threadCollection.forEach((item) => {
                     if (item.id === this.threadInformation.id) {
                         this.commentSection.downloadThread(item);
                     }
@@ -171,7 +171,7 @@ module AlienTube {
             let googlePlusButton = <HTMLButtonElement> this.threadContainer.querySelector("#at_switchtogplus");
             googlePlusButton.addEventListener("click", this.onGooglePlusClick, false);
 
-            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
+            let googlePlusContainer = <HTMLElement>document.querySelector(Application.COMMENT_ELEMENT_ID);
             if (Preferences.getBoolean("showGooglePlusButton") === false ||  googlePlusContainer === null) {
                 googlePlusButton.style.display = "none";
             }
@@ -256,7 +256,7 @@ module AlienTube {
         private onGooglePlusClick(eventObject: Event) {
             let alienTubeContainer = document.getElementById("alientube");
             alienTubeContainer.style.display = "none";
-            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
+            let googlePlusContainer = <HTMLElement>document.querySelector(Application.COMMENT_ELEMENT_ID);
             googlePlusContainer.style.visibility = "visible";
             googlePlusContainer.style.height = "auto";
             let redditButton = <HTMLDivElement> document.getElementById("at_switchtoreddit");

@@ -49,17 +49,14 @@ module AlienTube {
                                     finalResultCollection.push(result.data);
                                 }
                             });
-                            
+
                             let preferredPost, preferredSubreddit;
-                            if (finalResultCollection.length === 0) {
-                                this.returnNoResults();
-                            }
-                            else {
+                            if (finalResultCollection.length > 0) {
                                 if (Application.currentMediaService() === Service.YouTube) {
                                     /* Scan the YouTube comment sections for references to subreddits or reddit threads.
                                     These will be prioritised and loaded first.  */
                                     let mRegex = /(?:http|https):\/\/(.[^/]+)\/r\/([A-Za-z0-9][A-Za-z0-9_]{2,20})(?:\/comments\/)?([A-Za-z0-9]*)/g;
-                                    
+
                                     let commentLinks = document.querySelectorAll("#eow-description a");
                                     for (var b = 0, coLen = commentLinks.length; b < coLen; b += 1) {
                                         let linkElement = <HTMLElement>commentLinks[b];
@@ -74,7 +71,7 @@ module AlienTube {
                                         }
                                     }
                                 }
-    	                       
+
                                 // Sort threads into array groups by what subreddit they are in.
                                 let getExcludedSubreddits = Preferences.enforcedExludedSubreddits.concat(Preferences.getArray("excludedSubredditsSelectedByUser"));
                                 let sortedResultCollection = {};
@@ -101,7 +98,7 @@ module AlienTube {
                                     this.threadCollection.sort(function (a, b) {
                                         return b.score > a.score
                                     }.bind(this));
-                                    
+
                                     for (let i = 0, len = this.threadCollection.length; i < len; i += 1) {
                                         if (this.threadCollection[i].subreddit === preferredSubreddit) {
                                             let threadDataForFirstTab = this.threadCollection[i];
@@ -127,11 +124,11 @@ module AlienTube {
 
                                     // Load the first tab.
                                     this.downloadThread(this.threadCollection[0]);
+                                    return;
                                 }
                             }
+                            this.returnNoResults();
                         }
-                        window.addEventListener("resize", this.updateCommentsWidth.bind(this));
-                        this.updateCommentsWidth();
                     }.bind(this), null, loadingScreen);
                 }.bind(this));
             }
@@ -182,17 +179,17 @@ module AlienTube {
         public set(contents: Node) {
             let redditContainer = document.createElement("section");
             redditContainer.id = "alientube";
-            
+
             let commentsContainer;
             let serviceCommentsContainer;
             if (Application.currentMediaService() === Service.YouTube) {
-                commentsContainer = document.getElementById(Application.CONTENT_ELEMENT_ID);
-                serviceCommentsContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
+                commentsContainer = document.querySelector("ytd-comments#comments");
+                serviceCommentsContainer = document.querySelector("ytd-comments#comments > ytd-item-section-renderer");
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 commentsContainer = document.querySelector(".comments_container");
                 serviceCommentsContainer = document.querySelector(".comments_hide");
             }
-            
+
             let previousRedditInstance = document.getElementById("alientube");
             if (previousRedditInstance) {
                 commentsContainer.removeChild(previousRedditInstance);
@@ -200,15 +197,7 @@ module AlienTube {
 
 
             /* Check if Dark Mode is activated, and set AlienTube to dark mode */
-            this.checkEnvironmentDarkModestatus(redditContainer);
-            
-            /* Since there is no implicit event for a css property has changed, I have set a small transition on the body background colour.
-               this transition will trigger the transitionend event and we can use that to check if the background colour has changed, thereby activating dark mode. */
-            document.body.addEventListener("transitionend", function (e : TransitionEvent) {
-                if (e.propertyName === "background-color" && e.srcElement.tagName === "BODY") {
-                    this.checkEnvironmentDarkModestatus(document.getElementById("alientube"));
-                }
-            }, false);
+            (<any>this).checkEnvironmentDarkModestatus(redditContainer);
 
             if (serviceCommentsContainer) {
                 /* Add the "switch to Reddit" button in the google+ comment section */
@@ -221,20 +210,21 @@ module AlienTube {
                 }
 
                 if (this.getDisplayActionForCurrentChannel() === "gplus") {
-                    redditContainer.style.display = "none"
+                    redditContainer.style.display = "none";
                     redditButton.style.display = "block";
                 } else {
-                    serviceCommentsContainer.style.visibility = "collapse"
-                    serviceCommentsContainer.style.height = "0"
+                    serviceCommentsContainer.style.visibility = "collapse";
+                    serviceCommentsContainer.style.height = "0";
+                    serviceCommentsContainer.style.overflow = "hidden";
                 }
             }
-            
+
             /* Set the setting for whether or not AlienTube should show itself on this YouTube channel */
             let allowOnChannelContainer = document.getElementById("allowOnChannelContainer");
             if (!allowOnChannelContainer) {
                 let actionsContainer;
                 if (Application.currentMediaService() === Service.YouTube) {
-                    actionsContainer = document.getElementById(Application.CHANNEL_CONTAINER_ID);
+                    actionsContainer = document.querySelector("#upload-info");
                 } else if (Application.currentMediaService() === Service.Vimeo) {
                     actionsContainer = document.querySelector(".video_meta .byline");
                 }
@@ -314,7 +304,7 @@ module AlienTube {
             let len = this.threadCollection.length;
             let maxWidth;
             if (Application.currentMediaService() === Service.YouTube) {
-                maxWidth = document.getElementById(Application.SIZE_REFERENCE_ELEMENT).offsetWidth - 80;
+                maxWidth = document.getElementById("comments").offsetWidth - 80;
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 maxWidth = document.getElementById("comments").offsetWidth - 80;
             }
@@ -402,7 +392,7 @@ module AlienTube {
             let googlePlusButton = template.querySelector("#at_switchtogplus");
             googlePlusButton.addEventListener("click", this.onGooglePlusClick, false);
 
-            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
+            let googlePlusContainer = <HTMLElement>document.querySelector("ytd-comments#comments > ytd-item-section-renderer");
             
             if (Preferences.getBoolean("showGooglePlusButton") === false || googlePlusContainer === null) {
                 googlePlusButton.style.display = "none";
@@ -412,7 +402,7 @@ module AlienTube {
 
             if (Preferences.getBoolean("showGooglePlusWhenNoPosts") && googlePlusContainer) {
                 googlePlusContainer.style.visibility = "visible";
-            googlePlusContainer.style.height = "auto";
+                googlePlusContainer.style.height = "auto";
                 document.getElementById("alientube").style.display = "none";
 
                 let redditButton = <HTMLDivElement> document.getElementById("at_switchtoreddit");
@@ -428,7 +418,7 @@ module AlienTube {
          * @private
          */
         private onRedditClick(eventObject: Event) {
-            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
+            let googlePlusContainer = <HTMLElement>document.querySelector("ytd-comments#comments > ytd-item-section-renderer");
             googlePlusContainer.style.visibility = "collapse";
             googlePlusContainer.style.height = "0";
             let alienTubeContainer = document.getElementById("alientube");
@@ -445,7 +435,7 @@ module AlienTube {
         private onGooglePlusClick(eventObject: Event) {
             let alienTubeContainer = document.getElementById("alientube");
             alienTubeContainer.style.display = "none";
-            let googlePlusContainer = document.getElementById(Application.COMMENT_ELEMENT_ID);
+            let googlePlusContainer = <HTMLElement>document.querySelector("ytd-comments#comments > ytd-item-section-renderer");
             googlePlusContainer.style.visibility = "visible";
             googlePlusContainer.style.height = "auto";
             let redditButton = <HTMLDivElement> document.getElementById("at_switchtoreddit");
@@ -479,18 +469,6 @@ module AlienTube {
                         break;
                     }
                 }
-            }.bind(this));
-        }
-
-        /**
-         * Update comment section to new size of the document
-         * @private
-         */
-        private updateCommentsWidth() {
-            window.requestAnimationFrame(function () {
-                // Set Alientube comment width to the size reference element's
-                var w = document.getElementById(Application.SIZE_REFERENCE_ELEMENT).offsetWidth;
-                document.getElementById("alientube").style.width = w + "px";
             }.bind(this));
         }
 
@@ -584,7 +562,7 @@ module AlienTube {
          */
         private allowOnChannelChange(eventObject: Event) {
             let allowedOnChannel = (<HTMLInputElement>eventObject.target).checked;
-            let channelId = document.querySelector("meta[itemprop='channelId']").getAttribute("content");
+            let channelId = document.querySelector(".ytd-video-owner-renderer > a").getAttribute("href").split("/").pop();
             let channelDisplayActions = Preferences.getObject("channelDisplayActions");
             channelDisplayActions[channelId] = allowedOnChannel ? "alientube" : "gplus";
             Preferences.set("channelDisplayActions", channelDisplayActions);
@@ -597,7 +575,7 @@ module AlienTube {
         private getDisplayActionForCurrentChannel() {
             let channelId;
             if (Application.currentMediaService() === Service.YouTube) {
-                channelId = document.getElementById(Application.CHANNEL_ELEMENT_ID).innerText;
+                channelId = document.querySelector(".ytd-video-owner-renderer > a").getAttribute("href").split("/").pop();
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 channelId = document.querySelector("a[rel='author']").getAttribute("href").substring(1);
             }
@@ -642,7 +620,7 @@ module AlienTube {
                 bodyBackgroundColourAverage = bodyBackgroundColourAverage + parseInt(bodyBackgroundColourArray[i], 10);
             }
             bodyBackgroundColourAverage = bodyBackgroundColourAverage / 3;
-            if (bodyBackgroundColourAverage < 100) {
+            if (bodyBackgroundColourAverage < 100 || document.documentElement.getAttribute("dark")) {
                 alientubeContainer.classList.add("darkmode");
             } else {
                 alientubeContainer.classList.remove("darkmode");

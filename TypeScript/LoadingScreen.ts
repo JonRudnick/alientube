@@ -22,14 +22,14 @@ module AlienTube {
             this.representedHTMLElement = Application.getExtensionTemplateItem(commentSection.template, "loading");
             this.updateProgress(loadingState, alternativeText);
         }
-    	
+
         /**
          * Get the HTML element of the loading screen container.
          */
         get HTMLElement() {
             return this.representedHTMLElement;
         }
-    	
+
         /**
          * Update the current progress of the loading screen.
          * @param state The new state of the loading screen.
@@ -61,7 +61,6 @@ module AlienTube {
                     if (parentNode) {
                         this.representedHTMLElement.parentNode.removeChild(this.representedHTMLElement);
                     }
-                    //delete this;
                     break;
             }
         }

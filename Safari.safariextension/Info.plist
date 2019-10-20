@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.6</string>
+	<string>2.7.2</string>
 	<key>CFBundleVersion</key>
-	<string>2.6</string>
+	<string>2.7.2</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -38,7 +38,6 @@
 		<array>
 			<string>http://www.youtube.com/*</string>
 			<string>https://www.youtube.com/*</string>
-			<string>https://alientube.co/</string>
 		</array>
 	</dict>
 	<key>Description</key>
@@ -55,7 +54,6 @@
 			<array>
 				<string>www.youtube.com</string>
 				<string>api.reddit.com</string>
-				<string>alientube.co</string>
 			</array>
 			<key>Include Secure Pages</key>
 			<true/>
@@ -64,6 +62,6 @@
 		</dict>
 	</dict>
 	<key>Website</key>
-	<string>http://alientube.co/</string>
+        <string>https://github.com/KoffeinFlummi/alientube</string>
 </dict>
 </plist>

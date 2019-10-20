@@ -44,6 +44,7 @@ Chrome/_locales/*
 Chrome/TypeScript/*
 !Chrome/res/load_options.js
 
+Firefox/data/*
 Firefox/js/*
 Firefox/res/*
 Firefox/_locales/*
@@ -61,16 +62,16 @@ Safari.safariextension/TypeScript/*
 
 TypeScript/*.js
 lib/script.js
+lib/script-es5.js
 lib/script.d.ts
 lib/options.js
+lib/options-es5.js
 lib/options.d.ts
+lib/background.js
+lib/background-es5.js
 
 res/style.css
 res/options.css
 .sass-cache/*
 
 reloadExtension.scpt
-
-lib/options-es5.js
-
-lib/script-es5.js

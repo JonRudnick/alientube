@@ -4,8 +4,8 @@
   "short_name": "AlienTube",
   "description": "Reddit Comments for YouTube",
   "author": "Delexious",
-  "homepage_url": "http://alientube.co/",
-  "version": "2.6",
+  "homepage_url": "https://github.com/KoffeinFlummi/alientube",
+  "version": "2.7.2",
   "icons": { "16": "icon16.png",
            "48": "icon48.png",
           "128": "icon128.png" },
@@ -16,20 +16,27 @@
 
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/*", "*://vimeo.com/*", "*://alientube.co/"],
+      "matches": ["*://www.youtube.com/*", "*://vimeo.com/*"],
       "js": ["js/snuownd.js", "js/script.js"],
       "css": ["res/style.css"],
       "run_at": "document_start"
     }
   ],
+
+  "background": {
+    "scripts": [
+      "js/background.js"
+    ],
+    "persistent": false
+  },
+
   "permissions": [
     "http://www.youtube.com/",
     "https://www.youtube.com/",
     "https://api.reddit.com/",
-    "http://alientube.co/",
     "storage"
   ],
-  
+
   "optional_permissions": [
     "*://vimeo.com/*"
   ],

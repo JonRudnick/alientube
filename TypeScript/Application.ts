@@ -13,14 +13,6 @@ module AlienTube {
         static localisationManager: LocalisationManager;
         static commentSection: CommentSection;
         currentVideoIdentifier: string;
-        
-        // Some constants for new YouTube layout
-        static CONTENT_ELEMENT_ID = "main";
-        static COMMENT_ELEMENT_ID = "comments";
-        static CHANNEL_ELEMENT_ID = "owner-name";
-        static SIZE_REFERENCE_ELEMENT = "info-contents";
-        static CHANNEL_CONTAINER_ID = "upload-info";
-        static PAGE_NAV_EVENT = "yt-navigate-finish";
 
         constructor() {
             // Load preferences from disk.
@@ -28,13 +20,13 @@ module AlienTube {
                 // Check if a version migration is necessary.
                 if (Preferences.getString("lastRunVersion") !== Application.version()) {
                     new Migration(Preferences.getString("lastRunVersion"));
-                    
+
                     /* Update the last run version paramater with the current version so we'll know not to run this migration again. */
                     Preferences.set("lastRunVersion", Application.version());
                 }
             });
-            
-            // Load language files. 
+
+            // Load language files.
             Application.localisationManager = new LocalisationManager(function () {
                 // Load stylesheet
                 if (Application.getCurrentBrowser() === Browser.SAFARI) {
@@ -45,17 +37,17 @@ module AlienTube {
                         document.head.appendChild(stylesheet);
                     });
                 }
-                
+
                 if (Application.currentMediaService() === Service.YouTube) {
-                    // Detect page navigation
-                    document.addEventListener(Application.PAGE_NAV_EVENT, this.youtubePageNav);
-                    
-                    // Make sure youtubePageNav will create initial comments
-                    this.currentVideoIdentifier = null;
-                    
-                    // If page has loaded, create comments section
-                    if (document.getElementById(Application.COMMENT_ELEMENT_ID)) {
-                        this.youtubePageNav();
+                    // Start observer to detect when a new video is loaded.
+                    let observer = new MutationObserver(this.youtubeMutationObserver);
+                    let config = { attributes: true, childList: true, characterData: true };
+                    //observer.observe(document.querySelector("content"), config);
+
+                    // Start a new comment section.
+                    this.currentVideoIdentifier = Application.getCurrentVideoId();
+                    if (Utilities.isVideoPage) {
+                        this.waitForYTComments();
                     }
                 } else if (Application.currentMediaService() === Service.Vimeo) {
                     // Start observer to detect when a new video is loaded.
@@ -66,23 +58,44 @@ module AlienTube {
             }.bind(this));
         }
 
-        /**
-            * Event listener for monitoring for whenever the user changes to a new "page" on YouTube
-            * @param event YouTube's internal page load event
-            * @private
-        */
-        private youtubeEventListener(event: Event) {
-            let reportedVideoId = Application.getCurrentVideoId();
-            if (reportedVideoId !== this.currentVideoIdentifier) {
-                this.currentVideoIdentifier = reportedVideoId;
-                if (Utilities.isVideoPage) {
-                    Application.commentSection = new CommentSection(this.currentVideoIdentifier);
+        private waitForYTComments() {
+            if (!document.getElementById("contents")) {
+                setTimeout(() => {this.waitForYTComments()}, 500);
+                return;
+            }
+            if (document.getElementById("contents").childElementCount == 0) {
+                var commentsHeader = document.getElementsByClassName('ytd-comments-header-renderer count-text');
+                if (commentsHeader.length && /^[^0]/.test(commentsHeader[0].innerHTML)) {
+                    setTimeout(() => {this.waitForYTComments()}, 500);
+                    return;
                 }
             }
+
+            setTimeout(() => {Application.commentSection = new CommentSection(this.currentVideoIdentifier)}, 500);
         }
-        
+
         /**
-            * Mutation Observer for monitoring for whenever the user changes to a new "page" on YouTube
+            * Mutation Observer for monitoring for whenver the user changes to a new "page" on YouTube
+            * @param mutations A collection of mutation records
+            * @private
+        */
+        private youtubeMutationObserver(mutations: Array<MutationRecord>) {
+            mutations.forEach(function (mutation) {
+                let target = <HTMLElement>mutation.target;
+                if (target.classList.contains("yt-card") ||  target.id === "content") {
+                    let reportedVideoId = Application.getCurrentVideoId();
+                    if (reportedVideoId !== this.currentVideoIdentifier) {
+                        this.currentVideoIdentifier = reportedVideoId;
+                        if (Utilities.isVideoPage) {
+                            Application.commentSection = new CommentSection(this.currentVideoIdentifier);
+                        }
+                    }
+                }
+            }.bind(this));
+        }
+
+        /**
+            * Mutation Observer for monitoring for whenver the user changes to a new "page" on YouTube
             * @param mutations A collection of mutation records
             * @private
         */
@@ -180,17 +193,44 @@ module AlienTube {
             * @param callback A callback to be called when the extension templates has been loaded.
         */
         public static getExtensionTemplates(callback: any) {
-            var templateLink = new XMLHttpRequest();
-            templateLink.open("GET", Application.getExtensionRessourcePath("templates.html"), true);
-            templateLink.responseType = "document";
-            templateLink.onload = function() {
-                if (callback) {
-                    callback(templateLink.responseXML);
-                }
-            }.bind(this)
-            templateLink.send();
+            switch (Application.getCurrentBrowser()) {
+                case Browser.FIREFOX:
+                    let template = document.createElement("div");
+                    let handlebarHTML = Handlebars.compile(self.options.template);
+                    template.innerHTML = handlebarHTML();
+
+                    if (callback) {
+                        callback(template);
+                    }
+                    break;
+
+                case Browser.SAFARI:
+                    new HttpRequest(Application.getExtensionRessourcePath("templates.html"), RequestType.GET, function (data) {
+                        let template = document.createElement("div");
+                        let handlebarHTML = Handlebars.compile(data);
+                        template.innerHTML = handlebarHTML();
+
+                        if (callback) {
+                            callback(template);
+                        }
+                    }.bind(this), null, null);
+                    break;
+
+                case Browser.CHROME:
+                    let templateLink = document.createElement("link");
+                    templateLink.id = "alientubeTemplate";
+                    templateLink.onload = function () {
+                        if (callback) {
+                            callback((<any>templateLink).import);
+                        }
+                    }.bind(this);
+                    templateLink.setAttribute("rel", "import");
+                    templateLink.setAttribute("href", Application.getExtensionRessourcePath("templates.html"));
+                    document.head.appendChild(templateLink);
+                    break;
+            }
         }
-        
+
         /**
          * Get the current version of the extension.
          * @public
@@ -205,14 +245,14 @@ module AlienTube {
                 case Browser.FIREFOX:
                     version = self.options.version;
                     break;
-                    
+
                 case Browser.SAFARI:
                     version = safari.extension.displayVersion;
                     break;
             }
             return version;
         }
-        
+
         /**
          * Get an element from the template collection.
          * @param templateCollection The template collection to use.
@@ -220,9 +260,18 @@ module AlienTube {
          * @returns DOM node of a template section.
          */
         public static getExtensionTemplateItem(templateCollection: any, id: string) {
-            return templateCollection.getElementById(id).content.cloneNode(true);
+            switch (Application.getCurrentBrowser()) {
+                case Browser.CHROME:
+                    return templateCollection.getElementById(id).content.cloneNode(true);
+
+                case Browser.FIREFOX:
+                    return templateCollection.querySelector("#" + id).content.cloneNode(true);
+
+                case Browser.SAFARI:
+                    return templateCollection.querySelector("#" + id).content.cloneNode(true);
+            }
         }
-        
+
         /**
          * Get the current media website that AlienTube is on
          * @returns A "Service" enum value representing a media service.
@@ -236,7 +285,7 @@ module AlienTube {
             }
             return null;
         }
-        
+
         /**
          * Retrieve the current browser that AlienTube is running on.
          * @returns A "Browser" enum value representing a web browser.

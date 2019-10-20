@@ -78,7 +78,7 @@ module AlienTube {
         get HTMLElement() {
             return this.representedHTMLElement;
         }
-    	
+
         /**
          * Handle the click of the submit button of the comment field.
          * @param eventObject The event object of the click of the submit button.
@@ -95,7 +95,7 @@ module AlienTube {
 
             if (this.edit) {
                 /* Send the edit comment request to reddit */
-                new AlienTube.Reddit.EditCommentRequest(thing_id, inputField.value, function (responseText) {
+                new AlienTube.Reddit.EditCommentRequest(thing_id, inputField.value, (responseText) => {
                     this.parentClass.commentObject.body = inputField.value;
                     let editedCommentBody = this.parentClass.representedHTMLElement.querySelector(".at_commentcontent");
                     editedCommentBody.innerHTML = SnuOwnd.getParser().render(inputField.value);
@@ -107,7 +107,7 @@ module AlienTube {
                 });
             } else {
                 /* Send the comment to Reddit */
-                new AlienTube.Reddit.CommentRequest(thing_id, inputField.value, function (responseText) {
+                new AlienTube.Reddit.CommentRequest(thing_id, inputField.value, (responseText) => {
                     let responseObject = JSON.parse(responseText);
                     let comment = new Comment(responseObject.json.data.things[0].data, this.commentThread);
                     this.parentClass.children.push(comment);
@@ -129,7 +129,7 @@ module AlienTube {
                 });
             }
         }
-    	
+
         /**
          * Cancel / Remove the comment field.
          * @private
@@ -137,7 +137,7 @@ module AlienTube {
         private onCancelButtonClick() {
             this.representedHTMLElement.parentNode.removeChild(this.representedHTMLElement);
         }
-    	
+
         /**
          * Handle the contents of the comment field changing.
          * @param eventObject The event object of the input field change.

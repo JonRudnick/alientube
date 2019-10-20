@@ -28,19 +28,22 @@
 /// <reference path="typings/firefox/firefox.d.ts" />
 /// <reference path="typings/safari/safari.d.ts" />
 
-"use strict";
-function at_initialise() {
-    if (window.top === window) {
-        new AlienTube.Application();
-    }
-}
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.requestType == "redditRequest") {
+        if (request.url.substr(0, 23) !== "https://api.reddit.com/") {
+            return false;
+        }
 
-if (window.location.host.indexOf("youtube") !== -1) {
-    document.addEventListener("yt-navigate-finish", at_initialise, false);
-} else {
-    if (document.readyState === "complete" || document.readyState === "interactive") {
-        at_initialise();
-    } else {
-        document.addEventListener("DOMContentLoaded", at_initialise, false);
+        console.log(request.url);
+
+        new AlienTube.HttpRequest(
+            request.url,
+            request.type,
+            (response) => { sendResponse({success: true, content: response}); },
+            request.data,
+            (status, response) => { sendResponse({success: false, status: status, content: response}); }
+        );
+
+        return true;
     }
-}
+});
