@@ -1,5 +1,4 @@
 #!/bin/bash
-bold=$(tput bold)
 standout=$(tput smso)
 normal=$(tput sgr0)
 green=$(tput setaf 2)
@@ -10,7 +9,7 @@ abort() {
     echo
     printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' \#
     echo
-    echo ${red}Operation failed${normal}
+    echo "${red}"Operation failed"${normal}"
     echo
     echo
     exit 1
@@ -21,14 +20,14 @@ set -e
 
 echo
 if [ "$1" == "--debug" ]; then
-    echo Compiling AlienTube in ${standout}debug${normal} mode.
+    echo Compiling AlienTube in "${standout}"debug"${normal}" mode.
 else
-    echo Compiling AlienTube in ${standout}production${normal} mode.
+    echo Compiling AlienTube in "${standout}"production"${normal}" mode.
 fi
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' \#
 echo
 
-echo ${standout}Removing old files${normal}
+echo "${standout}"Removing old files"${normal}"
 echo Removing TypeScript mapping folders.
 rm -rf Chrome/TypeScript
 rm -rf Safari.safariextension/TypeScript
@@ -55,7 +54,7 @@ rm -f Firefox/data/style.css.map
 echo
 echo
 
-echo ${standout}Compiling SASS style files.${normal}
+echo "${standout}"Compiling SASS style files."${normal}"
 echo Compiling Main SASS stylesheet.
 sass res/style.scss res/style.css
 echo Compiling Options SASS stylesheet
@@ -63,7 +62,7 @@ sass res/options.scss res/options.css
 echo
 echo
 
-echo ${standout}Copying static browser resources${normal}
+echo "${standout}"Copying static browser resources"${normal}"
 echo Copying Chrome Resources
 mkdir -p Chrome/res
 mkdir -p Chrome/js
@@ -97,7 +96,7 @@ cp -fr lib/handlebars-v3.0.3.js Firefox/data
 echo
 echo
 
-echo ${standout}Updating Options HTML Page${normal}
+echo "${standout}"Updating Options HTML Page"${normal}"
 cp -vf  options.html Chrome/res/options.html
 cp -vf options.html Firefox/data/options.html
 cp -vf options.html Safari.safariextension/res/options.html
@@ -105,7 +104,7 @@ echo
 echo
 
 
-echo ${standout}Compiling TypeScript Files.${normal}
+echo "${standout}"Compiling TypeScript Files."${normal}"
 if [ "$1" == "--debug" ]; then
     echo Compiling Options page TypeScript in ES5 compatibility mode without comments with source map.
     tsc --target ES5 --out lib/options-es5.js TypeScript/Options/Options.ts --removeComments --sourcemap
@@ -147,13 +146,13 @@ cp -vf lib/background-es5.js Chrome/js/background.js
 echo
 echo
 
-echo ${standout}Copying Style Files${normal}
+echo "${standout}"Copying Style Files"${normal}"
 cp -vf res/style.css Chrome/res/style.css
 cp -vf res/style.css Safari.safariextension/res/style.css
 cp -vf res/style.css Firefox/data/style.css
 echo
 
-echo ${standout}Copying Template Files${normal}
+echo "${standout}"Copying Template Files"${normal}"
 cp -vf res/templates.html Chrome/res/templates.html
 cp -vf res/templates.html Safari.safariextension/res/templates.html
 cp -vf res/templates.html Firefox/data/templates.html
@@ -161,7 +160,7 @@ echo
 echo
 
 if [ "$1" == "--debug" ]; then
-    echo ${standout}Copying Development Sourcemaps${normal}
+    echo "${standout}"Copying Development Sourcemaps"${normal}"
     cp -vf lib/script.js.map Chrome/js/script.js.map
     cp -vf lib/options.js.map Chrome/js/options.js.map
     cp -vf lib/script-es5.js.map Safari.safariextension/js/script.js.map
@@ -181,7 +180,7 @@ if [ "$1" == "--debug" ]; then
     echo
 fi
 
-echo ${standout}Copying Localisation Files${normal}
+echo "${standout}"Copying Localisation Files"${normal}"
 echo Copying localisation files to Chrome
 rsync -a --exclude=".*" _locales Chrome/
 echo Copying localisation files to Safari
@@ -190,7 +189,7 @@ echo Copying localisation files to Firefox
 rsync -a --exclude=".*" _locales Firefox/data/
 
 if [ "$1" == "--debug" ] && [[ "$OSTYPE" == "darwin"* ]]; then
-    echo ${standout}Reloading Development Browsers${normal}
+    echo "${standout}"Reloading Development Browsers"${normal}"
     osascript reload.scpt
 fi
 
@@ -198,7 +197,7 @@ echo
 echo
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' \#
 echo
-echo ${green}Operation completed sucessfully${normal}
+echo "${green}"Operation completed sucessfully"${normal}"
 echo
 echo
 trap : 0
