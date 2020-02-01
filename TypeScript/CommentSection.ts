@@ -574,7 +574,7 @@ module AlienTube {
          */
         private getDisplayActionForCurrentChannel() {
             let channelId;
-            if (Application.currentMediaService() === Service.YouTube) {
+            if (Application.currentMediaService() === Service.YouTube && document.querySelector("ytd-video-owner-renderer > a").getAttribute("href")) {
                 channelId = document.querySelector("ytd-video-owner-renderer > a").getAttribute("href").split("/").pop();
             } else if (Application.currentMediaService() === Service.Vimeo) {
                 channelId = document.querySelector("a[rel='author']").getAttribute("href").substring(1);
